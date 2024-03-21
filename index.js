@@ -1,4 +1,5 @@
 const express = require("express");
+const connectDb = require("./services/connectDB");
 require("dotenv").config();
 
 const app = express();
@@ -9,5 +10,6 @@ app.get("/", (req, res) => {
 });
 
 app.listen(PORT, async () => {
+  await connectDb();
   console.log(`Server is running on port ${PORT}`);
 });
