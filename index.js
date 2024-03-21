@@ -15,6 +15,7 @@ app.use(
 );
 
 app.use("/api/auth", require("./routes/authRoutes"));
+app.use("/api/folder", require("./routes/folderRoutes"));
 app.get("/", (req, res) => {
   res.end("Hello");
 });
