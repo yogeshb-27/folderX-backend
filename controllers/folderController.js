@@ -43,6 +43,38 @@ const getFolderContents = async (req, res) => {
   }
 };
 
+const createFolder = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { folderName, parentFolderId } = req.body;
+
+    // Create the new folder
+    const newFolder = await Folder.create({ name: folderName, owner: userId });
+
+    // If parentFolderId is provided, add the new folder to its subFolders
+    if (parentFolderId !== "root") {
+      const parentFolder = await Folder.findById(parentFolderId);
+      if (parentFolder) {
+        parentFolder.subFolders.push(newFolder._id);
+        await parentFolder.save();
+      }
+    } else {
+      // If no parentFolderId is provided, add the new folder to the user's rootFolder
+      const user = await User.findById(userId);
+      if (user) {
+        user.rootFolder.subFolders.push(newFolder._id);
+        await user.save();
+      }
+    }
+
+    res.status(201).json({ message: "Folder created successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
 module.exports = {
   getFolderContents,
+  createFolder,
 };
