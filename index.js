@@ -1,10 +1,18 @@
 const express = require("express");
+const cors = require("cors");
 const connectDb = require("./services/connectDB");
 require("dotenv").config();
-
+console.log(process.env.FRONTEND_BASE_URL);
 const app = express();
 const PORT = process.env.PORT || 3001;
 app.use(express.json());
+app.use(
+  cors({
+    credentials: true,
+    origin: `${process.env.FRONTEND_BASE_URL}`,
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
 app.use("/api/auth", require("./routes/authRoutes"));
 app.get("/", (req, res) => {
