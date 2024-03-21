@@ -1,5 +1,6 @@
 const User = require("../models/User");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
 // Register a new user
 const register = async (req, res) => {
@@ -38,11 +39,9 @@ const register = async (req, res) => {
     // Check if password contains at least one special character
     const hasSpecial = /[!@#$%^&*()_+]/.test(password);
     if (!hasSpecial) {
-      return res
-        .status(400)
-        .json({
-          error: "Password must contain at least one special character",
-        });
+      return res.status(400).json({
+        error: "Password must contain at least one special character",
+      });
     }
 
     // Check if email is already registered
@@ -63,4 +62,24 @@ const register = async (req, res) => {
   }
 };
 
-module.exports = { register };
+// Login
+const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(401).json({ error: "Invalid Email" });
+    }
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return res.status(401).json({ error: "Incorrect Password" });
+    }
+
+    const token = jwt.sign({ id: user._id }, process.env.SECRETKEY);
+    return res.status(200).json({ token });
+  } catch (error) {
+    res.status(401).json({ error: error.message });
+  }
+};
+
+module.exports = { register, login };
