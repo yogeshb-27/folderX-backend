@@ -2,6 +2,7 @@ const {
   getFolderContents,
   createFolder,
   renameFolder,
+  deleteFolder,
 } = require("../controllers/folderController");
 const { authenticateUser } = require("../middlewares/authMiddleware");
 
@@ -11,5 +12,6 @@ router.use(authenticateUser);
 router
   .get("/:folderId?", getFolderContents)
   .post("/", createFolder)
-  .patch("/:folderId?", renameFolder);
+  .patch("/:folderId?", renameFolder)
+  .delete("/:folderId?", deleteFolder);
 module.exports = router;

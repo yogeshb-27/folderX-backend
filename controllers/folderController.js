@@ -90,8 +90,59 @@ const renameFolder = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
+const deleteFolder = async (req, res) => {
+  try {
+    if (req.params.folderId === "root") return;
+    const folderId = req.params.folderId;
+    const userId = req.user._id;
+    const parentFolderId = req.body.parentFolderId;
+    const folder = await Folder.findById({ _id: folderId, owner: userId });
+    if (!folder) return res.status(404).json({ error: "Folder not found" });
+
+    if (parentFolderId === "root") {
+      const user = await User.findById(userId).select("rootFolder");
+      if (user) {
+        user.rootFolder.subFolders = user.rootFolder.subFolders?.filter(
+          (id) => id.toString() !== folderId
+        );
+        await user.save();
+      }
+    } else {
+      const parentFolder = await Folder.findById(parentFolderId);
+      if (parentFolder) {
+        parentFolder.subFolders = parentFolder.subFolders?.filter(
+          (id) => id.toString() !== folder._id.toString()
+        );
+        await parentFolder.save();
+      }
+    }
+    await deleteFolderRecursively(folder, parentFolderId);
+    res.status(200).json({ message: "Folder deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+const deleteFolderRecursively = async (folder, parentFolderId) => {
+  await Promise.all(
+    folder.subFolders.map(async (subFolderId) => {
+      const subFolder = await Folder.findById(subFolderId);
+      if (subFolder) {
+        await deleteFolderRecursively(subFolder, folder._id);
+      }
+    })
+  );
+  for (const fileId of folder.files) {
+    await File.findByIdAndDelete(fileId);
+  }
+  await Folder.findByIdAndDelete(folder._id);
+};
+
 module.exports = {
   getFolderContents,
   createFolder,
   renameFolder,
+  deleteFolder,
 };
