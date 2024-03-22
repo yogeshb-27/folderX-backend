@@ -103,4 +103,24 @@ const downloadFile = async (req, res) => {
     res.status(500).json({ message: "Error downloading file" });
   }
 };
-module.exports = { uploadFile, deleteFile, renameFile, downloadFile };
+
+const getFile = async (req, res) => {
+  try {
+    const fileId = req.params.fileId;
+    const file = await File.findById({ _id: fileId });
+    if (!file) return res.status(404).json({ message: "File not found" });
+    const fileDetails = {
+      name: file.name,
+      type: file.type,
+      size: file.size,
+      mimeType: file.mimeType,
+      content: file.data.toString("base64"),
+    };
+    res.status(200).json(fileDetails);
+  } catch (error) {
+    console.error("Error fetching file details:", error);
+    res.status(500).json({ message: "Error fetching file details" });
+  }
+};
+
+module.exports = { uploadFile, deleteFile, renameFile, downloadFile, getFile };
