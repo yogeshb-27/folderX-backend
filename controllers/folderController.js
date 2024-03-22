@@ -74,7 +74,24 @@ const createFolder = async (req, res) => {
   }
 };
 
+const renameFolder = async (req, res) => {
+  try {
+    const { folderId } = req.params;
+    const { newFolderName } = req.body;
+    const folder = await Folder.findById(folderId);
+    if (!folder) {
+      return res.status(404).json({ error: "Folder not found" });
+    }
+    folder.name = newFolderName;
+    await folder.save();
+    res.status(200).json({ message: "Folder renamed successfully" });
+  } catch (error) {
+    console.error("Error renaming folder:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
 module.exports = {
   getFolderContents,
   createFolder,
+  renameFolder,
 };
