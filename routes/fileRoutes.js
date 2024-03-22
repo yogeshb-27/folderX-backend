@@ -1,5 +1,9 @@
 const multer = require("multer");
-const { uploadFile, deleteFile } = require("../controllers/fileController");
+const {
+  uploadFile,
+  deleteFile,
+  renameFile,
+} = require("../controllers/fileController");
 const { authenticateUser } = require("../middlewares/authMiddleware");
 const router = require("express").Router();
 const storage = multer.memoryStorage();
@@ -9,5 +13,6 @@ router.use(authenticateUser);
 
 router
   .post("/:folderId?", upload.single("file"), uploadFile)
-  .delete("/:fileId", deleteFile);
+  .delete("/:fileId", deleteFile)
+  .patch("/:fileId", renameFile);
 module.exports = router;

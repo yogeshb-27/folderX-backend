@@ -75,4 +75,18 @@ const deleteFile = async (req, res) => {
   }
 };
 
-module.exports = { uploadFile, deleteFile };
+const renameFile = async (req, res) => {
+  try {
+    const fileId = req.params.fileId;
+    const { newFileName } = req.body;
+    const file = await File.findById(fileId);
+    if (!file) return res.status(404).json({ message: "File not found" });
+    file.name = newFileName;
+    await file.save();
+    res.status(200).json({ message: "File renamed successfully" });
+  } catch (error) {
+    console.error("Error renaming file:", error);
+    res.status(500).json({ message: "Error renaming file" });
+  }
+};
+module.exports = { uploadFile, deleteFile, renameFile };
