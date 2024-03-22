@@ -2,7 +2,6 @@ const express = require("express");
 const cors = require("cors");
 const connectDb = require("./services/connectDB");
 require("dotenv").config();
-console.log(process.env.FRONTEND_BASE_URL);
 const app = express();
 const PORT = process.env.PORT || 3001;
 app.use(express.json());
@@ -16,6 +15,7 @@ app.use(
 
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/folder", require("./routes/folderRoutes"));
+app.use("/api/file", require("./routes/fileRoutes"));
 app.get("/", (req, res) => {
   res.end("Hello");
 });
