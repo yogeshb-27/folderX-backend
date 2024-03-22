@@ -3,6 +3,7 @@ const {
   uploadFile,
   deleteFile,
   renameFile,
+  downloadFile,
 } = require("../controllers/fileController");
 const { authenticateUser } = require("../middlewares/authMiddleware");
 const router = require("express").Router();
@@ -14,5 +15,6 @@ router.use(authenticateUser);
 router
   .post("/:folderId?", upload.single("file"), uploadFile)
   .delete("/:fileId", deleteFile)
-  .patch("/:fileId", renameFile);
+  .patch("/:fileId", renameFile)
+  .get("/download/:fileId", downloadFile);
 module.exports = router;

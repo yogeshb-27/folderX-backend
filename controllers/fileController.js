@@ -89,4 +89,18 @@ const renameFile = async (req, res) => {
     res.status(500).json({ message: "Error renaming file" });
   }
 };
-module.exports = { uploadFile, deleteFile, renameFile };
+
+const downloadFile = async (req, res) => {
+  try {
+    const fileId = req.params.fileId;
+    const file = await File.findById(fileId);
+    if (!file) return res.status(404).json({ message: "File not found" });
+    res.setHeader("Content-Type", "application/octet-stream");
+    res.setHeader("Content-Disposition", `attachment; filename=${file.name}`);
+    return res.end(file.data);
+  } catch (error) {
+    console.error("Error downloading file:", error);
+    res.status(500).json({ message: "Error downloading file" });
+  }
+};
+module.exports = { uploadFile, deleteFile, renameFile, downloadFile };
