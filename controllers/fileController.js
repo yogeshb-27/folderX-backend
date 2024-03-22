@@ -8,17 +8,14 @@ const uploadFile = async (req, res) => {
     const userId = req.user._id;
     let folder;
     const file = req.file;
-    if (!file) {
-      return res.status(400).json({ error: "No file provided" });
-    }
+    if (!file) return res.status(400).json({ error: "No file provided" });
+
     const maxSize = 15 * 1024 * 1024;
-    if (file.size > maxSize) {
+    if (file.size > maxSize)
       return res.status(400).json({ error: "File size exceeds limit (15 MB)" });
-    }
+
     const user = await User.findById(req.user._id);
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
+    if (!user) return res.status(404).json({ error: "User not found" });
 
     const newFile = await File.create({
       name: file.originalname,
@@ -48,4 +45,34 @@ const uploadFile = async (req, res) => {
   }
 };
 
-module.exports = { uploadFile };
+const deleteFile = async (req, res) => {
+  try {
+    const fileId = req.params.fileId;
+    const folderId = req.body.folderId;
+    const file = await File.findById(fileId).select("_id");
+    if (!file) return res.status(404).json({ message: "File not found" });
+
+    if (folderId == "root") {
+      const user = await User.findById(req.user._id);
+      if (user) {
+        user.rootFolder.files = user.rootFolder.files.filter(
+          (id) => id.toString() !== fileId
+        );
+        await user.save();
+      }
+    } else {
+      await Folder.findByIdAndUpdate(
+        folderId,
+        { $pull: { files: fileId } },
+        { new: true }
+      );
+    }
+    await File.findByIdAndDelete(fileId);
+    res.status(200).json({ message: "File deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting file:", error);
+    res.status(500).json({ message: "Error deleting file" });
+  }
+};
+
+module.exports = { uploadFile, deleteFile };
