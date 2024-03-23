@@ -1,6 +1,7 @@
 const File = require("../models/File");
 const User = require("../models/User");
 const Folder = require("../models/Folder");
+const { sendMail } = require("../services/sendMail");
 
 const uploadFile = async (req, res) => {
   try {
@@ -16,6 +17,17 @@ const uploadFile = async (req, res) => {
 
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ error: "User not found" });
+
+    const userQuota = 50 * 1024 * 1024;
+    if (user.usedStorage + file.size > userQuota) {
+      const userEmail = user.email;
+      try {
+        await sendMail(userEmail);
+      } catch (emailError) {
+        console.error("Error sending quota exceeded email:", emailError);
+      }
+      return res.status(400).json({ error: "User quota exceeded" });
+    }
 
     const newFile = await File.create({
       name: file.originalname,

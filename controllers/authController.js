@@ -91,7 +91,7 @@ const getUserStorageStats = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     } else {
       const userFiles = await File.find({ owner: userId }).select(
-        "size mimeType"
+        "size mimeType type"
       );
       let storageStats = {
         total: { size: 0, count: 0 },
@@ -104,7 +104,7 @@ const getUserStorageStats = async (req, res) => {
       userFiles.forEach((file) => {
         storageStats.total.size += file.size;
         storageStats.total.count += 1;
-        if (file.mimeType.includes("image")) {
+        if (file.mimeType.includes("image") || file.type == "heic") {
           storageStats.images.size += file.size;
           storageStats.images.count += 1;
         } else if (file.mimeType.includes("video")) {
