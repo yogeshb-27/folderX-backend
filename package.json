@@ -1,12 +1,13 @@
 {
   "name": "folderx-backend",
   "version": "1.0.0",
-  "description": "this is backend for fodlerx project",
+  "description": "this is backend for folderX project",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "node": "node index.js"
   },
-  "author": "",
+  "keywords": ["node","express","jwt","MongoDB","file manager"],
+  "author": "yogesh bidave",
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.1.1",
