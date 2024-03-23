@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const File = require("../models/File");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
@@ -82,4 +83,58 @@ const login = async (req, res) => {
   }
 };
 
-module.exports = { register, login };
+const getUserStorageStats = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    } else {
+      const userFiles = await File.find({ owner: userId }).select(
+        "size mimeType"
+      );
+      let storageStats = {
+        total: { size: 0, count: 0 },
+        images: { size: 0, count: 0 },
+        videos: { size: 0, count: 0 },
+        docs: { size: 0, count: 0 },
+        other: { size: 0, count: 0 },
+      };
+
+      userFiles.forEach((file) => {
+        storageStats.total.size += file.size;
+        storageStats.total.count += 1;
+        if (file.mimeType.includes("image")) {
+          storageStats.images.size += file.size;
+          storageStats.images.count += 1;
+        } else if (file.mimeType.includes("video")) {
+          storageStats.videos.size += file.size;
+          storageStats.videos.count += 1;
+        } else if (
+          file.mimeType.includes("pdf") ||
+          file.mimeType.includes("spreadsheet") ||
+          file.mimeType.includes("presentation") ||
+          file.mimeType.includes("document") ||
+          file.mimeType.includes("json") ||
+          file.mimeType.includes("md") ||
+          file.mimeType.includes("text")
+        ) {
+          storageStats.docs.size += file.size;
+          storageStats.docs.count += 1;
+        } else {
+          storageStats.other.size += file.size;
+          storageStats.other.count += 1;
+        }
+      });
+
+      user.usedStorage = storageStats.total.size;
+      await user.save();
+      return res.status(200).json({ storageStats });
+    }
+  } catch (error) {
+    console.error("Error fetching used storage:", error);
+    res.status(500).json({ error: "Failed to fetch user profile" });
+  }
+};
+
+module.exports = { register, login, getUserStorageStats };
