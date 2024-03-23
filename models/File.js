@@ -7,6 +7,7 @@ const fileSchema = new mongoose.Schema({
   size: { type: Number, required: true },
   data: { type: Buffer, required: true },
   owner: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  createdAt: { type: Date, default: Date.now, expires: 2592000 }, //30days
 });
 
 const File = mongoose.model("File", fileSchema);
